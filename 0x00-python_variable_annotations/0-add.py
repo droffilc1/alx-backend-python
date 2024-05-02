@@ -4,5 +4,6 @@
 
 
 def add(a: float, b: float) -> float:
-    """Returns sum of numbers"""
+    """ype-annotated function:
+    Returns sum of numbers"""
     return a + b
