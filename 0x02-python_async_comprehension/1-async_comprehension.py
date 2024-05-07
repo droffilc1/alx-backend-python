@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" 1-async_comprehension.py """
+""" 1-async_comprehension """
 
 from typing import List
 import asyncio
