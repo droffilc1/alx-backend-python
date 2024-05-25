@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """test_utils.py
-Implements a parameterized unit test.
+Implements unit test for utils.
 """
 import unittest
 from unittest import mock
