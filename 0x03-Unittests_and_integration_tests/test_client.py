@@ -88,7 +88,8 @@ class TestGithubOrgClient(unittest.TestCase):
         # Instantiate the client
         client = GithubOrgClient("test_org")
 
-        # Call the has_license method with the given parameters and assert the result
+        # Call the has_license method with the given parameters and
+        # assert the result
         self.assertEqual(client.has_license(repo, license_key), expected)
 
 
