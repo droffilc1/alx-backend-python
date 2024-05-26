@@ -73,10 +73,23 @@ class TestGithubOrgClient(unittest.TestCase):
             license="mit"), expected_repos_mit)
 
         # Assert that the mocked property and the mocked get_json were
-        #  called once
+        # called once
         mock_public_repos_url.assert_called_once()
         mock_get_json.assert_called_once_with(
             "https://api.github.com/orgs/test_org/repos")
+
+    @parameterized.expand([
+        ({"license": {"key": "my_license"}}, "my_license", True),
+        ({"license": {"key": "other_license"}}, "my_license", False),
+    ])
+    def test_has_license(self, repo: Dict[str, Any],
+                         license_key: str, expected: bool) -> None:
+        """Tests `GithubOrgClient.has_license` method."""
+        # Instantiate the client
+        client = GithubOrgClient("test_org")
+
+        # Call the has_license method with the given parameters and assert the result
+        self.assertEqual(client.has_license(repo, license_key), expected)
 
 
 if __name__ == '__main__':
