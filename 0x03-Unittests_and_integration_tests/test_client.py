@@ -4,9 +4,10 @@ Implements unit test for client.
 """
 import unittest
 from typing import Any, Dict, List
-from unittest.mock import PropertyMock, patch
-from parameterized import parameterized
+from unittest.mock import Mock, PropertyMock, patch
+from parameterized import parameterized, parameterized_class
 from client import GithubOrgClient
+from fixtures import TEST_PAYLOAD
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -91,6 +92,60 @@ class TestGithubOrgClient(unittest.TestCase):
         # Call the has_license method with the given parameters and
         # assert the result
         self.assertEqual(client.has_license(repo, license_key), expected)
+
+    @parameterized_class([
+        {
+            'org_payload': TEST_PAYLOAD[0][0],
+            'repos_payload': TEST_PAYLOAD[0][1],
+            'expected_repos': TEST_PAYLOAD[0][2],
+            'apache_repos': TEST_PAYLOAD[0][3]
+        }
+    ])
+    class TestIntegrationGithubOrgClient(unittest.TestCase):
+        """Implements the setUpClass and tearDownClass."""
+
+        # Define dummy attributes to satisfy pylint
+        org_payload = {}
+        repos_payload = []
+        expected_repos = []
+        apache2_repos = []
+
+        @classmethod
+        def setUpClass(cls) -> None:
+            """Set up the class by mocking request.get."""
+            route_payload = {
+                'https://api.github.com/orgs/test_org': cls.org_payload,
+                'https://api.github.com/orgs/test_org/repos':
+                cls.repos_payload,
+            }
+
+            def get_payload(url, *args, **kwargs):
+                mock_response = Mock()
+                if url in route_payload:
+                    mock_response.json.return_value = route_payload[url]
+                else:
+                    mock_response.raise_for_status.side_effect = Exception(
+                        'Not Found')
+                return mock_response
+
+            cls.get_patcher = patch("requests.get", side_effect=get_payload)
+            cls.get_patcher.start()
+
+        @ classmethod
+        def tearDownClass(cls) -> None:
+            """Tear down the class by stopping the patcher."""
+            cls.get_patcher.stop()
+
+        def test_public_repos(self) -> None:
+            """Test for public repos."""
+            client = GithubOrgClient("test_org")
+            self.assertEqual(client.public_repos(), self.expected_repos)
+
+        def test_public_repos_with_license(self) -> None:
+            """Test for public repos with Apache 2.0 license filter."""
+            client = GithubOrgClient("test_org")
+            self.assertEqual(client.public_repos(
+                license="apache-2.0"), self.apache2_repos)
 
 
 if __name__ == '__main__':
